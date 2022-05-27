@@ -6,6 +6,7 @@ Created on Sat May 21 10:29:44 2022
 Titanic - Machine Learning from Disaster
 https://www.kaggle.com/competitions/titanic
 """
+import csv
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
@@ -111,7 +112,7 @@ def data_creansing(rawData):
             creansedData.loc[i, "Cabin"] = "N"
     
     #欠損のあるデータを削除
-    creansedData = creansedData.dropna(how = "any", axis = 0)
+    #creansedData = creansedData.dropna(how = "any", axis = 0)           
     
     #Undersampling 
     if "Survived" in creansedData.keys():
@@ -120,6 +121,12 @@ def data_creansing(rawData):
     #カテゴリ変数をダミー変数に変換
     creansedData = pd.get_dummies(creansedData, columns=["Sex", "Cabin", "Embarked"], drop_first = True)
     
+    #!!!(修正箇所)欠損のあるデータを中央値で補完
+    #ダミー変数も一緒にやっていいかはよく分かっていない　簡単に検索したけど見つからなかった
+    #中央値ならダミーにも0/1以外入る事は稀のはずなのでみためも気持ち悪さもあまりない
+    creansedData = creansedData.fillna(creansedData.median())
+            
+
     #量的変数を標準化
     for Variable in ["Pclass","Age","SibSp","Parch","Fare"]:
         creansedData[Variable] = preprocessing.minmax_scale(creansedData[Variable])
@@ -130,7 +137,7 @@ def Training(data):
     Y = data["Survived"]
     X = data[[Variable for Variable in data.keys() if Variable != "Survived"]]
     
-    model = LogisticRegression(random_state = 0) 
+    model = LogisticRegression(C = 1, random_state = 0) 
     model.fit(X, Y)
     
     train_score = format(model.score(X, Y))
@@ -140,49 +147,27 @@ def Training(data):
 
 def test(model, data, rawData):
     """
-    bias
-        4.264737674847738
-    Pclass チケットクラス 0-3
-        -1.670385704196635
-    Age　年齢　数値
-        -2.3697204618023098
-    SibSp　タイタニック号に乗っている兄弟/配偶者の数　数値
-        -0.8957520934291382
-    Parch　タイタニック号に乗っている親/子供の数　数値
-        -0.2678327180231562
-    Fare　運賃（単位不明）
-        0.496875489517299
-    Sex　性別別 male or female
-        male -2.398660528485912
-    Cabin 客室番号？　 77.1%値がnull。　大部屋雑魚寝多数とか船員がnullとしてはいっている？
-        B -0.17816392358339628
-        C -0.7235679019468161
-        D 0.008947206697331398
-        E 0.42254609622055833
-        F 0.36059773010748664
-        G -0.355424035794591
-        T -0.5449057605492951
-        N -0.4089258783759889
-    Embarked　乗船した港　'S', 'C', 'Q'
-        Q -0.40945532167446463
-        S -0.5302026174536509
-        
-        
+    メモ        
     テストデータにCabinのTないやんけ
     """
+    
     #ダミー変数が足りていなかったので足しています。
     data.insert(loc = 12, column = "Cabin_T", value = 0)
     
-    bias = model.intercept_
-    weight = model.coef_
+    #bias = model.intercept_
+    #weight = model.coef_
     
-    result = []
+
+    result = model.predict(data)
     
     
-    
-    for i in data.index:
-        result.append([i,(np.array(data.loc[[i]]*weight).sum() + bias)[0]])
+    with open("./result.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["PassengerId","Survived"])
+        for i in range(len(result)):
+            w.writerow([rawData["PassengerId"][i], result[i]])
         
+    
     return result
     
 def main():
@@ -195,7 +180,7 @@ def main():
     
     
     result = test(model, creansedData_test, rawData_test)
-    return creansedData_train, creansedData_test, model, result
+    return rawData_train, rawData_test, creansedData_train, creansedData_test, model, result
     
     
     
@@ -203,7 +188,7 @@ def main():
         
         
 if __name__ == "__main__":
-    train, test, model, result = main()
+    rawData_train, rawData_test, creansedData_train, creansedData_test, model, result = main()
     
     
     
