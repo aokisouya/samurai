@@ -1,0 +1,81 @@
+Variable Name,Description(jp),Description(en)
+SalePrice,プロパティのドルでの販売価格。これは、予測しようとしているターゲット変数です。,-
+MSSubClass,建物クラス,The building class
+MSZoning,一般的なゾーニング分類,The general zoning classification
+LotFrontage,プロパティに接続された通りの直線フィート,Linear feet of street connected to property
+LotArea,平方フィート単位のロットサイズ,Lot size in square feet
+Street,道路アクセスのタイプ,Type of road access
+Alley,路地へのアクセスの種類,Type of 　 access
+LotShape,プロパティの一般的な形状,General shape of property
+LandContour,プロパティの平坦度,Flatness of the property
+Utilities,利用可能なユーティリティの種類,Type of utilities available
+LotConfig,ロット構成,Lot configuration
+LandSlope,プロパティの勾配,Slope of property
+Neighborhood,エイムズ市域内の物理的な場所,Physical locations within Ames city limits
+Condition1,幹線道路または鉄道への近さ,Proximity to main road or railroad
+Condition2,幹線道路または鉄道への近さ（2つ目が存在する場合）,Proximity to main road or railroad (if a second is present)
+BldgType,住居のタイプ,Type of dwelling
+HouseStyle,住居のスタイル,Style of dwelling
+OverallQual,全体的な素材と仕上げの品質,Overall material and finish quality
+OverallCond,全体的な状態の評価,Overall condition rating
+YearBuilt,元の建設日,Original construction date
+YearRemodAdd,改造日,Remodel date
+RoofStyle,屋根のタイプ,Type of roof
+RoofMatl,屋根材,Roof material
+Exterior1st,家の外装カバー,Exterior covering on house
+Exterior2nd,家の外装カバー（複数の素材の場合）,Exterior covering on house (if more than one material)
+MasVnrType,組積造ベニヤタイプ,Masonry veneer type
+MasVnrArea,平方フィートの組積造ベニア面積,Masonry veneer area in square feet
+ExterQual,外装素材の品質,Exterior material quality
+ExterCond,外装の素材の現状,Present condition of the material on the exterior
+Foundation,財団の種類,Type of foundation
+BsmtQual,地下室の高さ,Height of the basement
+BsmtCond,地下室の一般的な状態,General condition of the basement
+BsmtExposure,ストライキまたはガーデンレベルの地下壁,Walkout or garden level basement walls
+BsmtFinType1,地下室の仕上げエリアの品質,Quality of basement finished area
+BsmtFinSF1,タイプ1の完成した平方フィート,Type 1 finished square feet
+BsmtFinType2,2番目に完成した領域の品質（存在する場合）,Quality of second finished area (if present)
+BsmtFinSF2,タイプ2の完成した平方フィート,Type 2 finished square feet
+BsmtUnfSF,地下室の未完成の平方フィート,Unfinished square feet of basement area
+TotalBsmtSF,地下室面積の合計平方フィート,Total square feet of basement area
+Heating,暖房の種類,Type of heating
+HeatingQC,暖房の品質と状態,Heating quality and condition
+CentralAir,セントラルエアコン,Central air conditioning
+Electrical,電気システム,Electrical system
+1stFlrSF,1階平方フィート,First Floor square feet
+2ndFlrSF,2階の平方フィート,Second floor square feet
+LowQualFinSF,低品質の仕上げ平方フィート（すべてのフロア）,Low quality finished square feet (all floors)
+GrLivArea,地上（地上）のリビングエリアの平方フィート,Above grade (ground) living area square feet
+BsmtFullBath,地下のフルバスルーム,Basement full bathrooms
+BsmtHalfBath,地下のハーフバスルーム,Basement half bathrooms
+FullBath,グレード以上のフルバスルーム,Full bathrooms above grade
+HalfBath,グレード以上のハーフバス,Half baths above grade
+BedroomAbvGr,グレード以上のハーフバス,Number of bedrooms above basement level
+KitchenAbvGr,キッチンの数,Number of kitchens
+KitchenQual,キッチンの品質,Kitchen quality
+TotRmsAbvGrd,グレード以上の部屋の合計（バスルームは含まれません）,Total rooms above grade (does not include bathrooms)
+Functional,ホーム機能評価,Home functionality rating
+Fireplaces,暖炉の数,Number of fireplaces
+FireplaceQu,暖炉の品質,Fireplace quality
+GarageType,ガレージの場所,Garage location
+GarageYrBlt,ガレージが建てられた年,Year garage was built
+GarageFinish,ガレージの内装仕上げ,Interior finish of the garage
+GarageCars,車の容量でのガレージのサイズ,Size of garage in car capacity
+GarageArea,ガレージのサイズ（平方フィート）,Size of garage in square feet
+GarageQual,ガレージ品質,Garage quality
+GarageCond,ガレージの状態,Garage condition
+PavedDrive,舗装された私道,Paved driveway
+WoodDeckSF,平方フィートのウッドデッキエリア,Wood deck area in square feet
+OpenPorchSF,平方フィート単位のオープンポーチエリア,Open porch area in square feet
+EnclosedPorch,囲まれたポーチ領域（平方フィート）,Enclosed porch area in square feet
+3SsnPorch,平方フィートの3シーズンポーチエリア,Three season porch area in square feet
+ScreenPorch,平方フィート単位のスクリーンポーチ領域,Screen porch area in square feet
+PoolArea,平方フィート単位のプール面積,Pool area in square feet
+PoolQC,プールの品質,Pool quality
+Fence,柵の品質,Fence quality
+MiscFeature,他のカテゴリでカバーされていないその他の機能,Miscellaneous feature not covered in other categories
+MiscVal,その他の機能の$ Value,$Value of miscellaneous feature
+MoSold,販売月,Month Sold
+YrSold,販売年,Year Sold
+SaleType,販売の種類,Type of sale
+SaleCondition,販売条件,Condition of sale
