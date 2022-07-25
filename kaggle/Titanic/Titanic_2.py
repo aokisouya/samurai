@@ -9,30 +9,35 @@ https://www.kaggle.com/competitions/titanic
 import csv
 import numpy as np
 import pandas as pd
+import itertools
 from sklearn import preprocessing
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 
 def load_data():
     """
-    Returns
-    -------
-    TYPE
-        DataFrame
-
+    ファイルからデータを読み込む
     """
     rawData_train = pd.read_csv(r".\rawdata\train.csv")
     rawData_test = pd.read_csv(r".\rawdata\test.csv")
     return rawData_train, rawData_test
 
-def validation(data):
-    return train_test_split(data,         # 訓練データとテストデータに分割する
-                     test_size=0.3,       # テストデータの割合
-                     shuffle=True,        # シャッフルする
-                     random_state=0)      # 乱数シードを固定する
+      
+def missingValue_completion(data):
+    """
+    データの欠損値を補完する
+    """
+
+    #年齢の欠損を最頻値で埋める
+    #ToDo　データを分割する前に欠損を埋めるべき
+    data["Age"] = data["Age"].fillna(data["Age"].mode()[0])
+    #乗船港の欠損を最頻値で埋める
+    data["Embarked"] = data["Embarked"].fillna(data["Embarked"].mode()[0])
+    
+    return data
         
 def Undersampling(data):
     
@@ -65,11 +70,6 @@ def data_creansing(rawData):
     #PassengerIdをIndexに変換
     creansedData = rawData.set_index("PassengerId", verify_integrity = True)
     
-    #年齢の欠損を最頻値で埋める
-    creansedData["Age"] = creansedData["Age"].fillna(creansedData["Age"].mode()[0])
-    #乗船港の欠損を最頻値で埋める
-    creansedData["Embarked"] = creansedData["Embarked"].fillna(creansedData["Embarked"].mode()[0])
-    
     # 年齢を15歳刻みでまとめる
     creansedData["Age"] = round(creansedData["Age"] / 15) * 15
     #性別と年齢の目的変数をまとめる
@@ -89,11 +89,11 @@ def data_creansing(rawData):
     creansedData["Ticket"] = creansedData["Ticket"].where(~numberOnlyTicket,"number")
     creansedData["Ticket"] = creansedData["Ticket"].where(numberOnlyTicket,"Other than number")
     
-    
     #Cabinをグループごとに変換（客室番号の頭文字と定義）＆nanをNと定義
     #Cabinの情報にて、nanを客室未割当と定義した後、生存率で3段階に分ける
+    creansedData["Cabin"] = creansedData["Cabin"].str[0]
     creansedData["Cabin"] = creansedData["Cabin"].where(~creansedData["Cabin"].isnull(),"Low")
-    creansedData = creansedData.replace({"Cabin": ["T"]},"Low")
+    creansedData = creansedData.replace({"Cabin": ["T", "N"]},"Low")
     creansedData = creansedData.replace({"Cabin": ["A","G","C","F"]},"Middle")
     creansedData = creansedData.replace({"Cabin": ["B","E","D"]},"high")
     
@@ -110,8 +110,12 @@ def data_creansing(rawData):
     creansedData = creansedData.replace({"Fare": [500]}, "High")
     
     #Undersampling 
+    """
+    生存と死亡のデータ数を揃える
+    crossValidation を行う際に生存と死亡の比率が変わるため、意味が薄れてしまうと感じた為一度スキップ
     if "Survived" in creansedData.keys():
         creansedData = Undersampling(creansedData)
+    """
     
     #使わない説明変数削除 
     creansedData = creansedData.drop(columns = ["Name", "Age", "Sex"] , axis=1)
@@ -127,18 +131,46 @@ def data_creansing(rawData):
     
     return creansedData
 
-
-def Training(data):
-    Y = data["Survived"]
-    X = data[[Variable for Variable in data.keys() if Variable != "Survived"]]
+def Training(data, targetVariable, UseTraingVariable):
+    Y = data[targetVariable]
+    X = data[UseTraingVariable]
     
     model = LogisticRegression(C = 1, random_state = 0) 
     model.fit(X, Y)
     
-    train_score = format(model.score(X, Y))
-    print('正解率(train):', train_score)
-    
     return model
+
+def CrossValidation(data, targetVariable, k):
+    
+    sliptIndexes = list(range(0,data.shape[0], int(data.shape[0]/k)))
+    
+    ExplanatoryVariable = list(data.keys().drop(targetVariable))
+    
+    keyNum = len(ExplanatoryVariable)
+    
+    patterns = list(itertools.product(range(2), repeat=len(ExplanatoryVariable)))
+    
+    with open("result.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["DataGroupID","patternNo","Survived"] + ExplanatoryVariable)
+        for i in range(k-1):
+            data_test = data.iloc[sliptIndexes[i]:sliptIndexes[i+1], :]
+            data_train = pd.concat([data.iloc[:sliptIndexes[i], :],  data.iloc[sliptIndexes[i+1]:, :]])
+          
+            for patternNo in range(len(patterns)):
+                if 1 in patterns[patternNo]:
+                    UseTraingVariable = [ExplanatoryVariable[i] for i in range(keyNum) if patterns[patternNo][i]]
+                    Y = data[[targetVariable]]
+                    X = data[UseTraingVariable]
+                    model = Training(data, targetVariable, UseTraingVariable)
+                    
+                    w.writerow([i,patternNo,format(model.score(X, Y))] + list(patterns[patternNo]))
+                   
+        
+    data_test = data.iloc[sliptIndexes[k-1]:, :]
+    data_train = data.iloc[:sliptIndexes[k-1], :]
+        
+    return
 
 def test(model, data, rawData, keys, resultFileName):
     """
@@ -186,27 +218,27 @@ def test(model, data, rawData, keys, resultFileName):
     return result
     
 def main():
+    #cross validation で分割する個数
+    k = 5
     
+    #データを読み込む
     rawData_train, rawData_test = load_data()
-    rawData_train_train, rawData_train_test = validation(rawData_train)
-
-    creansedData_train_train = data_creansing(rawData_train_train)
-    creansedData_train_test = data_creansing(rawData_train_test.drop("Survived", axis = 1))
-    creansedData_test = data_creansing(rawData_test)
+    #欠損したデータを補完
+    CompletedData_train = missingValue_completion(rawData_train)
+    CompletedData_test = missingValue_completion(rawData_test)
     
-    model = Training(creansedData_train_train)
+    #学習データの前処理
+    creansedData_train = data_creansing(CompletedData_train)
+    creansedData_test = data_creansing(CompletedData_test)
     
-    #return rawData_train, rawData_train_train, rawData_train_test, rawData_test, creansedData_train_train, creansedData_train_test, creansedData_test, model, None, None
+    
+    #crossVaridation test
+    CrossValidation(creansedData_train, "Survived", k)
 
- 
-    result_test = test(model, creansedData_train_test, rawData_train_test, creansedData_train_train.keys()[1:], "result_test.csv")
-    result = test(model, creansedData_test, rawData_test, creansedData_train_train.keys()[1:],  "result.csv")
-    return rawData_train, rawData_test, rawData_train_train, rawData_train_test, creansedData_train_train, creansedData_train_test, creansedData_test, model, result_test, result
-
+    
+    
+    #result = test(model, creansedData_test, CompletedData_test, creansedData_train.keys()[1:],  "result.csv")
     
 if __name__ == "__main__":
-    #data = main()
-    rawData_train, rawData_train_train, rawData_train_test, rawData_test, creansedData_train_train, creansedData_train_test, creansedData_test, model, result_test, result = main()
-    
-    
+    main()   
     
